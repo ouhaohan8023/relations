@@ -1,5 +1,5 @@
 {
-    "name": "ouhaohan8023/relation",
+    "name": "ohhink/relation",
     "description": "User Hierarchical Relationship",
     "autoload": {
         "psr-4": {

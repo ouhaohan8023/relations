@@ -6,8 +6,6 @@
 
 > 快速创建层级架构，可用于上下级明确，多层级的任意应用
 
-本拓展包是基于[Laravel Permission](https://github.com/spatie/laravel-permission.git)的界面化封装，用于快速搭建权限管理后台
-
 本拓展包运行基础环境：
 
 1. Php >= 8.0
