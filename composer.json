@@ -1,0 +1,18 @@
+{
+    "name": "ouhaohan8023/relation",
+    "description": "User Hierarchical Relationship",
+    "autoload": {
+        "psr-4": {
+            "Ohh\\Relation\\": "src/",
+            "Ohh\\Relation\\App\\": "src/app/"
+        }
+    },
+    "require": {},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ohh\\Relation\\OhhRelationServiceProvider"
+            ]
+        }
+    }
+}
