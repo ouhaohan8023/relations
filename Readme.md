@@ -77,8 +77,9 @@ class User extends Authenticatable
 | directParent |  获取直接上级 | `$user->directParent` |
 | recursionChildren |  已当前节点，向下生成树 | `$user->recursionChildren` |
 | sblings |  获取兄弟节点 | `$user->sblings` |
-| allChildren |  获取全部下级, asc 依次向下 / desc 从最底层往上 | `$user->allChildren() / User::allChildren(1, "asc)` |
-| allParents |  获取全部上级, asc 依次向上 / desc 从最高层向下 | `$user->allParents() / User::allParents(5, "asc)` |
+| allChildren |  获取全部下级, asc 依次向下 / desc 从最底层往上 | `$user->allChildren() / User::allChildren(1, "asc")` |
+| allParents |  获取全部上级, asc 依次向上 / desc 从最高层向下 | `$user->allParents() / User::allParents(5, "asc")` |
+| transfer | 转移节点，成为目标节点的子节点 | `$user->transfer(1) / User::transfer(1, 5)` |
 
 ## 维护者
 
