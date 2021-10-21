@@ -98,4 +98,27 @@ class RelationService extends BaseService
             ->where("level", 1)
             ->pluck("user_id");
     }
+
+    public static function upperNode($userId, $level)
+    {
+        Relation::query()
+            ->where("user_id", $userId)
+            ->where("level", ">", $level)
+            ->decrement("level");
+    }
+
+    public static function delNode($userId)
+    {
+        // del children
+        $children = RelationService::getRelationships($userId, "parent_id");
+        foreach ($children as $c) {
+            if ($c->user_id != $c->parent_id) {
+                RelationService::upperNode($c->user_id, $c->level);
+                $c->delete();
+            }
+        }
+
+        // del parents
+        RelationService::del($userId);
+    }
 }

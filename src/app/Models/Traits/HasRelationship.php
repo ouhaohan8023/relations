@@ -3,13 +3,13 @@
 
 namespace Ohh\Relation\App\Models\Traits;
 
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Ohh\Relation\App\Services\RelationService;
 use Ohh\Relation\App\Services\UserService;
 
 trait HasRelationship
 {
-    protected $callProtectFunctions = ['allChildren', 'allParents', 'transfer'];
+    protected $callProtectFunctions = ['allChildren', 'allParents', 'transfer', 'delNode'];
 
     public static function __callStatic($method, $parameters)
     {
@@ -122,7 +122,22 @@ trait HasRelationship
         return UserService::transfer($userId, $parentId);
     }
 
-    protected function addChild($userId, $childId)
+    /**
+     * 删除节点
+     * @param  null  $userId int 删除节点id
+     */
+    protected function delNode($userId = null)
     {
+        if (!$userId) {
+            $userId = $this->id;
+        }
+
+        DB::beginTransaction();
+        // del relationships
+        RelationService::delNode($userId);
+
+        // update parent_id column
+        UserService::delNode($userId);
+        DB::commit();
     }
 }

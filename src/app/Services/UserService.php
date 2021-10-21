@@ -3,6 +3,7 @@
 namespace Ohh\Relation\App\Services;
 
 use App\Models\User;
+use App\Models\UserTest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -54,5 +55,21 @@ class UserService extends BaseService
             self::transfer($children, $userId);
         }
         return $bool;
+    }
+
+    public static function delNode($userId)
+    {
+        $key = config("relationship.parent_id_key");
+
+        $user = UserTest::find($userId);
+        $parentId = $user->$key;
+
+        $children = $user->directChildren;
+        if ($children) {
+            $ids = $children->pluck("id");
+            User::query()->whereIn("id", $ids)->update(["parent_id" => $parentId]);
+        }
+        $user->$key = 0;
+        $user->save();
     }
 }
