@@ -2,8 +2,6 @@
 
 namespace Ohh\Relation\App\Services;
 
-use App\Models\User;
-use App\Models\UserTest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -13,13 +11,15 @@ class UserService extends BaseService
      * 通过给定的数组顺序获取用户
      * @param $ids
      */
-    public static function getUserByIds($ids)
+    public function getUserByIds($ids)
     {
-        $sql = "FIELD(id ,".implode(",", $ids->toArray()).")";
-        return User::query()
-            ->whereIn("id", $ids)
-            ->orderByRaw($sql)
-            ->get();
+        if ($ids->isNotEmpty()) {
+            $sql = "FIELD(id ,".implode(",", $ids->toArray()).")";
+            return $this->getClass()->query()
+                ->whereIn("id", $ids)
+                ->orderByRaw($sql)
+                ->get();
+        }
     }
 
     /**
@@ -28,7 +28,7 @@ class UserService extends BaseService
      * @param $parentId
      * @return bool
      */
-    public static function transfer($userIds, $parentId)
+    public function transfer($userIds, $parentId)
     {
         $key = config("relationship.parent_id_key");
 
@@ -39,7 +39,7 @@ class UserService extends BaseService
 
         $bool = true;
         DB::beginTransaction();
-        User::query()->whereIn("id", $userIds)->update([$key => $parentId]);
+        $this->getClass()->query()->whereIn("id", $userIds)->update([$key => $parentId]);
         RelationService::delWithoutSelf($userIds);
         $parents = RelationService::getRelationships($parentId);
         foreach ($parents as $p) {
@@ -57,17 +57,17 @@ class UserService extends BaseService
         return $bool;
     }
 
-    public static function delNode($userId)
+    public function delNode($userId)
     {
         $key = config("relationship.parent_id_key");
 
-        $user = UserTest::find($userId);
+        $user = $this->getClass()->find($userId);
         $parentId = $user->$key;
 
         $children = $user->directChildren;
         if ($children) {
             $ids = $children->pluck("id");
-            User::query()->whereIn("id", $ids)->update(["parent_id" => $parentId]);
+            $this->getClass()->query()->whereIn("id", $ids)->update(["parent_id" => $parentId]);
         }
         $user->$key = 0;
         $user->save();

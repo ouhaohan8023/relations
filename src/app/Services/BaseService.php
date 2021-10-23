@@ -4,6 +4,13 @@ namespace Ohh\Relation\App\Services;
 
 class BaseService
 {
+    protected $model;
+
+    public function __construct($class)
+    {
+        $this->model = $class;
+    }
+
     protected $callProtectFunctions = [];
 
     public static function __callStatic($method, $parameters)
@@ -18,5 +25,10 @@ class BaseService
         }
 
         return $this->forwardCallTo($this->newQuery(), $method, $parameters);
+    }
+
+    public function getClass()
+    {
+        return app($this->model);
     }
 }

@@ -76,8 +76,8 @@ trait HasRelationship
         if (!$userId) {
             $userId = $this->id;
         }
-        $ids = RelationService::getChildIds($userId, $orderBy);
-        return UserService::getUserByIds($ids);
+        $ids = (new RelationService($this->relationModel))->getChildIds($userId, $orderBy);
+        return (new UserService(self::class))->getUserByIds($ids);
     }
 
     /**
@@ -91,8 +91,8 @@ trait HasRelationship
         if (!$userId) {
             $userId = $this->id;
         }
-        $ids = RelationService::getParentIds($userId, $orderBy);
-        return UserService::getUserByIds($ids);
+        $ids = (new RelationService($this->relationModel))->getParentIds($userId, $orderBy);
+        return (new UserService(self::class))->getUserByIds($ids);
     }
 
     /**
@@ -119,7 +119,7 @@ trait HasRelationship
         if ($parentId === $userId) {
             return false;
         }
-        return UserService::transfer($userId, $parentId);
+        return (new UserService(self::class))->transfer($userId, $parentId);
     }
 
     /**
@@ -134,10 +134,10 @@ trait HasRelationship
 
         DB::beginTransaction();
         // del relationships
-        RelationService::delNode($userId);
+        (new RelationService($this->relationModel))->delNode($userId);
 
         // update parent_id column
-        UserService::delNode($userId);
+        (new UserService(self::class))->delNode($userId);
         DB::commit();
     }
 }

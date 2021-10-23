@@ -2,8 +2,6 @@
 
 namespace Ohh\Relation\App\Services;
 
-use Ohh\Relation\App\Models\Relation;
-
 class RelationService extends BaseService
 {
     /**
@@ -12,9 +10,10 @@ class RelationService extends BaseService
      * @param  string  $orderBy asc 依次向下 / desc 从最底层往上
      * @return \Illuminate\Support\Collection
      */
-    public static function getChildIds($id, $orderBy = "asc")
+    public function getChildIds($id, $orderBy = "asc")
     {
-        return Relation::query()
+        return $this->getClass()
+            ->query()
             ->where("parent_id", $id)
             ->where("user_id", "!=", $id)
             ->orderBy("level", $orderBy)
@@ -27,9 +26,10 @@ class RelationService extends BaseService
      * @param  string  $orderBy asc 依次向上 / desc 从最高层向下
      * @return \Illuminate\Support\Collection
      */
-    public static function getParentIds($id, $orderBy = "asc")
+    public function getParentIds($id, $orderBy = "asc")
     {
-        return Relation::query()
+        return $this->getClass()
+            ->query()
             ->where("user_id", $id)
             ->where("parent_id", "!=", $id)
             ->orderBy("level", $orderBy)
@@ -40,18 +40,19 @@ class RelationService extends BaseService
      * 删除指定id的所有层级关系
      * @param $id
      */
-    public static function del($id)
+    public function del($id)
     {
-        Relation::query()->where("user_id", $id)->delete();
+        $this->getClass()->query()->where("user_id", $id)->delete();
     }
 
     /**
      * 删除指定id除自身外所有的层级关系
      * @param $id
      */
-    public static function delWithoutSelf($id)
+    public function delWithoutSelf($id)
     {
-        Relation::query()
+        $this->getClass()
+            ->query()
             ->whereIn("user_id", $id)
             ->whereNotIn("parent_id", $id)
             ->delete();
@@ -63,9 +64,9 @@ class RelationService extends BaseService
      * @param  string  $key "user_id" | "parent_id"
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public static function getRelationships($id, $key = "user_id")
+    public function getRelationships($id, $key = "user_id")
     {
-        return Relation::query()->where($key, $id)->get();
+        return $this->getClass()->query()->where($key, $id)->get();
     }
 
     /**
@@ -75,7 +76,7 @@ class RelationService extends BaseService
      * @param $level
      * @return bool
      */
-    public static function addRelationship($userIds, $parentId, $level)
+    public function addRelationship($userIds, $parentId, $level)
     {
         $add = [];
         foreach ($userIds as $k => $userId) {
@@ -83,7 +84,7 @@ class RelationService extends BaseService
             $add[$k]["parent_id"] = $parentId;
             $add[$k]["level"] = $level;
         }
-        return Relation::insert($add);
+        return $this->getClass()->query()->insert($add);
     }
 
     /**
@@ -91,34 +92,34 @@ class RelationService extends BaseService
      * @param $id
      * @return \Illuminate\Support\Collection
      */
-    public static function getDirectChildIds($id)
+    public function getDirectChildIds($id)
     {
-        return Relation::query()
+        return $this->getClass()->query()
             ->where("parent_id", $id)
             ->where("level", 1)
             ->pluck("user_id");
     }
 
-    public static function upperNode($userId, $level)
+    public function upperNode($userId, $level)
     {
-        Relation::query()
+        $this->getClass()->query()
             ->where("user_id", $userId)
             ->where("level", ">", $level)
             ->decrement("level");
     }
 
-    public static function delNode($userId)
+    public function delNode($userId)
     {
         // del children
-        $children = RelationService::getRelationships($userId, "parent_id");
+        $children = $this->getRelationships($userId, "parent_id");
         foreach ($children as $c) {
             if ($c->user_id != $c->parent_id) {
-                RelationService::upperNode($c->user_id, $c->level);
+                $this->upperNode($c->user_id, $c->level);
                 $c->delete();
             }
         }
 
         // del parents
-        RelationService::del($userId);
+        $this->del($userId);
     }
 }
