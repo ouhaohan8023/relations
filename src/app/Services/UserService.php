@@ -7,6 +7,14 @@ use Illuminate\Support\Facades\DB;
 
 class UserService extends BaseService
 {
+    protected $parentKey;
+
+    public function __construct($class)
+    {
+        parent::__construct($class);
+        $this->parentKey = config("relationship.parent_id_key");
+    }
+
     /**
      * 通过给定的数组顺序获取用户
      * @param $ids
@@ -30,7 +38,7 @@ class UserService extends BaseService
      */
     public function transfer($userIds, $parentId)
     {
-        $key = config("relationship.parent_id_key");
+        $key = $this->parentKey;
 
         if (!is_array($userIds) && !($userIds instanceof Collection)) {
             $arr[] = $userIds;
@@ -59,7 +67,7 @@ class UserService extends BaseService
 
     public function delNode($userId)
     {
-        $key = config("relationship.parent_id_key");
+        $key = $this->parentKey;
 
         $user = $this->getClass()->find($userId);
         $parentId = $user->$key;
@@ -71,5 +79,12 @@ class UserService extends BaseService
         }
         $user->$key = 0;
         $user->save();
+    }
+
+    public function removeNode($children)
+    {
+        $key = $this->parentKey;
+
+        $this->getClass()->query()->whereIn("id", $children)->update([$key => 0]);
     }
 }

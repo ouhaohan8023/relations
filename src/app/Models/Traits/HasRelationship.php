@@ -9,7 +9,7 @@ use Ohh\Relation\App\Services\UserService;
 
 trait HasRelationship
 {
-    protected $callProtectFunctions = ['allChildren', 'allParents', 'transfer', 'delNode'];
+    protected $callProtectFunctions = ['allChildren', 'allParents', 'transfer', 'delNode', 'removeNode'];
 
     public static function __callStatic($method, $parameters)
     {
@@ -138,6 +138,20 @@ trait HasRelationship
 
         // update parent_id column
         (new UserService(self::class))->delNode($userId);
+        DB::commit();
+    }
+
+    protected function removeNode($userId = null)
+    {
+        if (!$userId) {
+            $userId = $this->id;
+        }
+        $relation = new RelationService($this->relationModel);
+
+        DB::beginTransaction();
+        $ids = $relation->getChildrenIdWithSelf($userId);
+        $relation->removeNode($ids);
+        (new UserService(self::class))->removeNode($ids);
         DB::commit();
     }
 }

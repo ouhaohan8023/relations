@@ -122,4 +122,16 @@ class RelationService extends BaseService
         // del parents
         $this->del($userId);
     }
+
+    public function getChildrenIdWithSelf($userId)
+    {
+        $children = $this->getChildIds($userId)->toArray();
+        $children[] = $userId;
+        return $children;
+    }
+
+    public function removeNode($children)
+    {
+        $this->getClass()->query()->whereIn("user_id", $children)->delete();
+    }
 }
